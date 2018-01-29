@@ -1,0 +1,78 @@
+02- Pre Second Lecture
+
+Today's lecture is all going to be about Data Storage & Management. 
+
+People have a wrong concept of "cloud". A tech guy will understand its just someone else's computer 
+stored at a different location. You use his computer as a resource to power your product.
+Or as we term it "outsourcing" the job.
+
+I just remembered, I wrote an article long back on my own blog of ssd vs nvme vs m2e vs pcie
+http://thetechiesguide.com/tech/ssd-vs-m-2-vs-pcie-vs-nvme/2928/
+And apparently about RAID too.
+http://thetechiesguide.com/tech/what-is-raid/2722/
+
+There are so many things we do everyday but I barely remember the terms used. like DAS,LVM etc.
+
+Point to be noted: 
+
+1] As system administrators, we frequently need to carefully eliminate possible causes 
+of failures, so the fewer layers of indirection we have between the operating system issuing I/O
+ operations and the bits actually ending up on a storage medium, the better.
+
+2] The benefits of using a central file server for data storage are immediate and obvious: data is no 
+longer restricted to a single physical or virtual host and can be accessed (simultaneously) by multiple
+clients. By pooling larger resources in a dedicated NAS device, more storage becomes available.
+Other than the performance impact we mentioned above, the distinct disadvantage lies in the fact that 
+the data becomes unavailable if the net- work connection su↵ers a disruption.
+
+3] Storage area networks are frequently labeled an “enterprise solution” due to their significant 
+performance advantages and distributed nature.
+
+4] SANs overcome their restriction to a local area network by further encap- sulation of the protocol:
+Fibre Channel over Ethernet (FCoE) or iSCSI, for example, allow connecting switched SAN 
+components across a Wide Area Network (or WAN).
+
+5] By relying on abstracted storage containers from a third-party provider (Cloud), we remove the ability
+to troubleshoot a system end-to-end; by outsourcing data storage, we invite a number of security concerns
+regarding data safety and privacy; by accessing files over the Internet, we may increase latency and
+decrease throughput; the cloud service provider may become a single point of failure for our systems, 
+one that is entirely outside our control.
+
+6] The larger we grow our storage re- quirements, the more complex the architecture grows.
+
+7] Redundancy Reliability and Resilience.
+
+8] Hot-swapping, greater transfer speeds - Advantages of SATA
+
+9] people have started to simply create a single partition occupying only about 25% of the disk at the 
+beginning and ignoring the rest. technique, known as “short stroking”
+
+10] In the BSD family of operating systems, the volume boot record contains a disklabel, detailed 
+information about the geometry of the disk and the par- titions it is divided into.
+
+11] Wouldn’t it be nice if we could simply combine the storage from multiple disk drives and then create 
+partitions spanning the total?
+Enter logical volumes. Much like a SAN may combine multiple storage devices and make them available to 
+its clients, so does a logical volume manager (or LVM) combine multiple physical devices and present them 
+to the OS as a single resource.
+
+12] Stuff ive written on my blog, still ...
+RAID 0 RAID 1 RAID 2 RAID 3 RAID 4 RAID 5 RAID 6
+Striped array (block level), no parity or mirroring Mirrored array, no parity or striping
+Striped array (bit level) with dedicated parity
+Striped array (byte level) with dedicated parity
+Striped array (block level) with dedicated parity
+Striped array (block level) with distributed parity Striped array (block level) with double 
+distributed parity
+
+13] a distributed file system may allow di↵erent client systems to access a centralized storage resource 
+simultaneously, thus forming the basis for any NAS solutions. (clients no longer operate on the block 
+level of the storage)
+
+14] Everything is a file (For Unix). As Always
+
+15] Most Unix systems impose a maximum file name length of 255 bytes and a maximum pathname length of 
+1024 bytes; however, these are file system and OS specific limits. : Okay didnt knew this.
+
+Questions: How do small companies handle storage failure if they dont have RAID or any such setup?
+
