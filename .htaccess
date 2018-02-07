@@ -54,3 +54,41 @@ RewriteBase /
 RewriteCond %{QUERY_STRING} (author=\d+) [NC]
 RewriteRule .* - [F]
 </IfModule>
+
+#Protect From Script Injections
+Options +FollowSymLinks
+RewriteEngine On
+RewriteCond %{QUERY_STRING} (<|%3C).*script.*(>|%3E) [NC,OR]
+RewriteCond %{QUERY_STRING} GLOBALS(=|[|%[0-9A-Z]{0,2}) [OR]
+RewriteCond %{QUERY_STRING} _REQUEST(=|[|%[0-9A-Z]{0,2})
+RewriteRule ^(.*)$ index.php [F,L]
+
+# Fight Back Against Content Scrapers
+RewriteEngine On
+#Replace ?mysite.com/ with your blog url
+RewriteCond %{HTTP_REFERER} !^http://(.+.)?mysite.com/ [NC]
+RewriteCond %{HTTP_REFERER} !^$
+#Replace /images/nohotlink.jpg with your "don't hotlink" image url
+RewriteRule .*.(jpe?g|gif|bmp|png)$ /images/nohotlink.jpg [L]
+
+# Plug-In To Protect Your Blog From Malicious URL Requests
+<?php
+global $user_ID;
+
+if($user_ID) {
+  if(!current_user_can('level_10')) {
+    if (strlen($_SERVER['REQUEST_URI']) > 255 ||
+      strpos($_SERVER['REQUEST_URI'], "eval(") ||
+      strpos($_SERVER['REQUEST_URI'], "CONCAT") ||
+      strpos($_SERVER['REQUEST_URI'], "UNION+SELECT") ||
+      strpos($_SERVER['REQUEST_URI'], "base64")) {
+        @header("HTTP/1.1 414 Request-URI Too Long");
+  @header("Status: 414 Request-URI Too Long");
+  @header("Connection: Close");
+  @exit;
+    }
+  }
+}
+?>
+# What this code does is pretty simple. It checks for excessively long request strings (more than 255 characters) and for the presence of either the eval or base64 PHP functions in the URI. If one of these conditions is met, then the plug-in sends a 414 error to the client’s browser.
+
