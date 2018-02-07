@@ -1,0 +1,56 @@
+Options All -Indexes
+
+#Protecting the WordPress Configuration File
+<files wp-config.php>
+order allow,deny
+deny from all
+</files>
+
+# Hide XML Sitemaps from Search Engines
+<IfModule mod_rewrite.c>
+<Files sitemap_index.xml>
+ Header set X-Robots-Tag "noindex"
+ </Files>
+</IfModule>
+
+#Remove extra Query Parameters from URLs
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{QUERY_STRING} !=""
+ RewriteCond %{QUERY_STRING} !^p=.*
+ RewriteCond %{QUERY_STRING} !^s=.*
+ RewriteCond %{REQUEST_URI} !^/wp-admin.*
+ RewriteRule ^(.*)$ /$1? [R=301,L]
+</IfModule>
+
+# Block the include-only files.
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+RewriteRule ^wp-admin/includes/ - [F,L]
+RewriteRule !^wp-includes/ - [S=3]
+RewriteRule ^wp-includes/[^/]+\.php$ - [F,L]
+RewriteRule ^wp-includes/js/tinymce/langs/.+\.php - [F,L]
+RewriteRule ^wp-includes/theme-compat/ - [F,L]
+</IfModule>
+
+#Protect .htaccess From Unauthorized Access
+<files ~ "^.*\.([Hh][Tt][Aa])">
+order allow,deny
+deny from all
+satisfy all
+</files>
+
+# Block WordPress xmlrpc.php requests
+<Files xmlrpc.php>
+order deny,allow
+deny from all
+</Files>
+
+# BEGIN block author scans
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+RewriteCond %{QUERY_STRING} (author=\d+) [NC]
+RewriteRule .* - [F]
+</IfModule>
