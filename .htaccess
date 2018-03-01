@@ -90,5 +90,21 @@ if($user_ID) {
   }
 }
 ?>
-# What this code does is pretty simple. It checks for excessively long request strings (more than 255 characters) and for the presence of either the eval or base64 PHP functions in the URI. If one of these conditions is met, then the plug-in sends a 414 error to the client’s browser.
+# What this code does is pretty simple. 
+#It checks for excessively long request strings (more than 255 characters) and 
+#for the presence of either the eval or base64 PHP functions in the URI. 
+#If one of these conditions is met, then the plug-in sends a 414 error to the client’s browser.
+
+# Disable the server signature 
+ServerSignature Off
+
+# Restrict access to IP's & domains (replace x with numbers)
+<Limit GET POST PUT>
+Order allow, deny
+allow from all
+deny from xx.xxx.xx.xxx
+deny from .*domain\.com.*
+</Limit>
+
+
 
