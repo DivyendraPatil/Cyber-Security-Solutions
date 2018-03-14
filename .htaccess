@@ -118,4 +118,7 @@ deny from .*domain\.com.*
     RewriteRule . /index.php [L]
 </IfModule>
 
-
+#For fixinf 404 errors
+Options +FollowSymLinks
+RewriteEngine On
+RewriteRule  ^author.*$ https://hemantmore.org.in/ [R=301,L]
