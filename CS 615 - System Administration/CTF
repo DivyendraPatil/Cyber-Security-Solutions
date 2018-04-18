@@ -1,0 +1,24 @@
+Create pgp keys using gpg tool.
+gpg --list-key
+send all keys in a txt file encrypting it with jan's public key
+gpg --list-key
+
+gpg --list-keys emailid
+
+gpg -d msg_decrypted.gpg
+gpg -d msg_decrypted.gpg > next_decrypt.gpg
+
+cat level1_instructions.dms
+
+
+tail -f nmap.out
+
+ls -ltrh | tail -1
+
+grep 'report' nmap.out | grep '(' | cut -d' ' -f5 > y
+
+for l in `cat y`; do shasum -a 512 $l >> h; done
+for l in `cat y`; do echo -n $l | shasum -a 512 >> h; done
+
+
+echo -n 'nemo.srcit.stevens-tech.edu.' | shasum -a 512
