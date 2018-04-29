@@ -22,3 +22,137 @@ for l in `cat y`; do echo -n $l | shasum -a 512 >> h; done
 
 
 echo -n 'nemo.srcit.stevens-tech.edu.' | shasum -a 512
+
+
+Level1
+
+passphrase:A chicken is 75% water.
+​Ran an nmap scan, got the list of hostnames, converted all the sha512 and
+compared.
+
+echo -n 'nemo.srcit.stevens-tech.edu.' | shasum -a 512
+a819dacf64ba1d6ff114ff4a55eaf93375dd95813ae427f7074108a26e934c3c5e3f535ccd7d967a5a51b6d19b29c27280c1dd5872c77ae89a98a3869e6d2d26
+
+ssh in 'nemo.srcit.stevens-tech.edu.' And it is linux lab.
+
+We can’t search files under ~jschauma, because the " Permission denied “ .
+And if the file not under ~jschauma we need search entire system.
+That will take lot of time.
+We try search some keyword like ”passphrase”,”jschauma”, but not find any useful
+information.
+And the instructions not give us any keyword to search.
+So we think the passphrase maybe have some relationship with “unexpectedly
+crash”.
+In /var/crash the file like this
+$ ls
+
+_usr_lib_valgrind_memcheck-amd64-linux.12538.crash
+_usr_lib_valgrind_memcheck-amd64-linux.12948.crash
+The empty line look not normal.
+And we find a file “level1" under /var/crash/  /615/ctf/ include “A chicken is
+75% water.”
+
+Level 2
+
+Answer: "Silkie chickens have black skin, black bones, and blue earlobes."
+
+Our first hint was the "You look familiar. Don't I know you from HW5?". We
+immediately realized that we are dealing with the same EC2 instance that was
+used to check our answers for HW5.
+
+After realizing this, we used the answer-checking script from HW5 at
+/cgi-bin/hw5-3.cgi in order to execute commands on the server remotely.
+This was achieved with the following command:
+`curl -H 'Expect: ' --data-binary @level2.sh \
+http://ec2-54-145-67-75.compute-1.amazonaws.com/cgi-bin/hw5-3.cgi`
+
+In level2.sh, we first ran `ls -la cgi-bin/` and found a level2.cgi file. We
+then modified level2.sh to instead run `cat cgi-bin/level2.cgi` and found that
+this script compares that submission to a result loaded from /var/tmp/level2.
+After running `cat /var/tmp/level2` on the server, we arrived at the answer and
+entered it on the submission site.
+
+Level3
+
+Answer: "The Araucana chicken carries the oocyan gene, leading to blue-shelled
+eggs."
+
+We can see from the public key that the host restricts key authentication to
+specific IPs. Upon investigation, we see that these IPs belong to Amazon and are
+used in the EU West 1 region. We started an instance with a public IP in one of
+these ranges and connected to it. We then moved the provided private key to
+~/.ssh/id_rsa and the public key to ~/.ssh/id_rsa.pub. We were then able to
+connect to the host provided in the comment of the public key.
+
+After connecting, we were greeted with a message and immediately had the
+connection closed. We realized that we could run commands on the host via
+ssh and found the offending line at the end of ~/.profile which exits the shell.
+We removed the line and were able to log in without being disconnected. After
+exploring the file system, we discovered that our PATH contained /usr/local/bin
+and $HOME/bin. There was only 1 file in /usr/local/bin, which we loaded in a
+hex editor and saw that it ran `echo "Goodbye, $(whoami)"` upon quitting.
+Quitting could be accomplished with ^\ since the program captured other signals.
+This file also has the setuid bit set for the user chicken. We made a script
+called whoami in ~/bin and had it `ls -la /home/chicken`. We saw a level3 file
+which we printed the contents of and got the passphrase.
+
+Level4
+
+Passphrase: "A chicken can be hypnotized by drawing a straight line from its
+beak."
+
+We explored /home and concluded that we would need access to the leghorn group
+in order to progress with the challenge. In order to do that, we used oru whoami
+script to get chicken to add our public key to
+/home/chicken/.ssh/authorized_keys. This allowed us to login as chicken, giving
+access to leghorn. We searched the /home/tweety, /home/foghorn, /home/roadrunner
+directories and spent some time trying to figure out what everything was being
+used for and if they were relevant. We were particularly interested by the
+read/write/r programs in /home/roadrunner since we saw root running r in
+`ps aux`. We saw in /home/foghorn/cfg something about a Caesar cipher, but
+didn't know how to apply it. Later on, we found /tmp/.foo/dump.out and ran
+`tcpdump -r dump.out`. This gave us some gibberish, but when we applied a
+Caesar cipher (rot13), we got some service domains. The cs615asa.netmeister.org
+domain had an AAAA record, so we set up an IPv6 tunnel in order to connect to it.
+
+Upon connecting, we found a form with several inputs. For the md5 passphrase, we
+hashed the solutions from the previous levels. Our first attempt was a random
+file with a detached signature for it. That yielded a message like "Created file
+in /home/adkz/chicken". In the hidden dest field, we saw that the default value
+was chicken, so we assumed that this was the file destination on another server
+since we couldn't find the file on the level3 server. So, we used our public key
+from level3 as the file input and signed that with the dest field being given
+.ssh/authorized_keys as input. This allowed us to ssh to cs615asa.netmeister.org
+via ipv6. The message claimed that the passphrase was in our home directory. We
+discovered an image called chicken.png in ~/.cshrc and opened it in a hex editor.
+At the end of the file, we found the passphrase "A chicken can be hypnotized by
+drawing a straight line from its beak."
+
+Level5
+
+We explored the filesystem and found the foghorn leghorn secure filesystem which
+was located at /dev/flfs. In this file, we decrypted the message for our team
+which was encrypted with our keys. This yielded a passphrase "The heaviest
+chicken egg reported wieghed 454 grams.". After more investigation, we saw in
+/etc/group that the looney group had a password. We entered the passphrase for
+`newgrp looney` and gained access to this group. We saw that the looney group
+could run /usr/local/bin/hostname and started investigated how we could use
+this. Running `pkg_admin audit bash` showed us a CVE that related to using
+hostname and PS4 to allow command substitution when bash prints the hostname.
+
+In order to exploit this, we set the hostname to a script in our homedir which
+would cat our public key to /home/tweety/.ssh/authorized_keys and gain access to
+the bigbird group and run update-figlet. Unfortunately, we had our .ssh without
+execute permissions and tweety ended up wiping its own authorized_keys,
+effectively locking us out. Professor Schaumann was kind enough to reset it for
+us. We looked at the strings in /usr/local/bin/update-figlet and found reference
+to /usr/local/libexec/update-figlet. This script fetched a pkg from an ftp
+server, which we could redirect by setting the PKG_HOST variable. We created
+an http server to serve a malicious NetBSD package. The package itself was just
+a copy of the figlet package with one additional line added to the +CONTENTS
+file: `@exec cp /home/adkz/index.html /var/www/upload/index.html`.
+
+After a few failures, we realized that the order of files in the tgz is
+important. We matched the order that we originally downloaded and then
+successfully ran update-figlet from tweety's homedir. This copied the file
+from our homedir to the ctf page and displayed our team name.
